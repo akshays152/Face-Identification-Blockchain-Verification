@@ -1,6 +1,6 @@
 """
-person2/hash_generator.py
-─────────────────────────
+blockchain/hash_generator.py
+----------------------------
 Deterministic SHA-256 fingerprinting of social/web post data.
 
 The canonicalization strategy guarantees that identical logical data
@@ -10,9 +10,9 @@ ordering or whitespace variations.
 Pipeline
 --------
 1.  Normalise each field (strip, lower-case URLs, sort metadata keys).
-2.  If ``post_image`` points to a readable local file → SHA-256 its bytes.
-    If it is a URL → attempt to download, then SHA-256.
-    On failure → record a clear marker so the caller knows.
+2.  If ``post_image`` points to a readable local file -> SHA-256 its bytes.
+    If it is a URL -> attempt to download, then SHA-256.
+    On failure -> record a clear marker so the caller knows.
 3.  Build a canonical pipe-delimited string.
 4.  SHA-256 the canonical string.
 """
@@ -28,9 +28,9 @@ from typing import Any
 import requests
 
 
-# ──────────────────────────────────────────────
+# -----------------------------------------------
 #  Image hashing
-# ──────────────────────────────────────────────
+# -----------------------------------------------
 
 def hash_image(path_or_url: str) -> dict[str, str]:
     """
@@ -39,9 +39,9 @@ def hash_image(path_or_url: str) -> dict[str, str]:
     Returns
     -------
     dict with keys:
-        ``sha256``  – hex digest on success, empty string on failure
-        ``status``  – ``"ok"`` | ``"unavailable"``
-        ``detail``  – human-readable explanation
+        ``sha256``  - hex digest on success, empty string on failure
+        ``status``  - ``"ok"`` | ``"unavailable"``
+        ``detail``  - human-readable explanation
     """
     if not path_or_url or not path_or_url.strip():
         return {
@@ -83,9 +83,9 @@ def hash_image(path_or_url: str) -> dict[str, str]:
         }
 
 
-# ──────────────────────────────────────────────
+# -----------------------------------------------
 #  Canonicalization
-# ──────────────────────────────────────────────
+# -----------------------------------------------
 
 def _normalize_url(url: str | None) -> str:
     """Strip and lower-case a URL (or return empty string)."""
@@ -129,7 +129,7 @@ def canonicalize(post_data: dict) -> str:
     text = _normalize_text(post_data.get("post_text"))
     meta = _normalize_metadata(post_data.get("metadata"))
 
-    # Image reference — prefer file/URL hash, fall back to raw value.
+    # Image reference - prefer file/URL hash, fall back to raw value.
     raw_image = (post_data.get("post_image") or "").strip()
     img_result = hash_image(raw_image)
     image_ref = img_result["sha256"] if img_result["status"] == "ok" else raw_image.lower()
@@ -137,9 +137,9 @@ def canonicalize(post_data: dict) -> str:
     return f"{url}|{image_ref}|{text}|{meta}"
 
 
-# ──────────────────────────────────────────────
+# -----------------------------------------------
 #  Fingerprint generation
-# ──────────────────────────────────────────────
+# -----------------------------------------------
 
 def generate_fingerprint(post_data: dict) -> dict:
     """
@@ -148,9 +148,9 @@ def generate_fingerprint(post_data: dict) -> dict:
     Returns
     -------
     dict with keys:
-        ``canonical_data`` – the deterministic string that was hashed
-        ``sha256``         – hex-encoded SHA-256 digest
-        ``image_info``     – result of image hashing (status, detail)
+        ``canonical_data`` - the deterministic string that was hashed
+        ``sha256``         - hex-encoded SHA-256 digest
+        ``image_info``     - result of image hashing (status, detail)
     """
     canonical = canonicalize(post_data)
     sha = hashlib.sha256(canonical.encode("utf-8")).hexdigest()

@@ -1,6 +1,6 @@
 """
-person2/config.py
-─────────────────
+blockchain/config.py
+--------------------
 Loads environment variables for the Blockchain Verification Module.
 Uses python-dotenv so a .env file in the project root is picked up
 automatically.
@@ -38,7 +38,7 @@ class Config:
         if require_contract and not cls.CONTRACT_ADDRESS:
             errors.append(
                 "CONTRACT_ADDRESS is not set. Deploy the contract first "
-                "(py person2/deploy.py) then add the address to .env."
+                "(py blockchain/deploy.py) then add the address to .env."
             )
         if errors:
             for e in errors:

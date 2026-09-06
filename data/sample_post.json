@@ -1,11 +1,11 @@
 {
-    "_comment": "SAMPLE / DEVELOPMENT TEST DATA — NOT a genuine social-media discovery.",
+    "_comment": "This is sample data for local testing of the verification pipeline.",
     "post_url": "https://example.com/sample-post-12345",
     "post_image": "sample.jpg",
-    "post_text": "Sample content for blockchain verification testing",
+    "post_text": "Sample content for blockchain verification testing...",
     "metadata": {
         "source": "development-test",
         "platform": "example"
     },
-    "similarity": 0.91
+    "similarity": 0.99
 }

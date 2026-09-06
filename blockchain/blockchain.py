@@ -1,6 +1,6 @@
 """
-person2/blockchain.py
-─────────────────────
+blockchain/blockchain.py
+------------------------
 Python interface to the ContentVerifier smart contract.
 
 Provides:
@@ -18,7 +18,7 @@ from pathlib import Path
 from web3 import Web3
 from solcx import compile_source, install_solc, get_installed_solc_versions
 
-from person2.config import Config
+from blockchain.config import Config
 
 SOLC_VERSION = "0.8.20"
 
@@ -38,7 +38,7 @@ class BlockchainClient:
         self._abi: list | None = None
         self._bytecode: str = ""
 
-    # ── Connection ──────────────────────────────────────
+    # -- Connection --
 
     def connect(self) -> None:
         """Connect to the blockchain node specified in .env."""
@@ -62,7 +62,7 @@ class BlockchainClient:
         self._private_key = Config.PRIVATE_KEY
         self.account = self.w3.eth.account.from_key(self._private_key).address
 
-    # ── Compilation ─────────────────────────────────────
+    # -- Compilation --
 
     def compile_contract(self) -> tuple[list, str]:
         """Compile contract.sol and return (abi, bytecode)."""
@@ -75,7 +75,7 @@ class BlockchainClient:
 
         # Ensure the compiler is installed
         if SOLC_VERSION not in [str(v) for v in get_installed_solc_versions()]:
-            print(f"  Installing solc {SOLC_VERSION} …")
+            print(f"  Installing solc {SOLC_VERSION} ...")
             install_solc(SOLC_VERSION)
 
         source = sol_path.read_text(encoding="utf-8")
@@ -99,7 +99,7 @@ class BlockchainClient:
         self._bytecode = interface["bin"]
         return self._abi, self._bytecode
 
-    # ── Deploy (used by deploy.py) ──────────────────────
+    # -- Deploy --
 
     def deploy(self) -> str:
         """Deploy the ContentVerifier contract. Returns the contract address."""
@@ -128,7 +128,7 @@ class BlockchainClient:
         self._attach(address)
         return address
 
-    # ── Attach to an existing deployment ────────────────
+    # -- Attach to an existing deployment --
 
     def attach(self, address: str | None = None) -> None:
         """Attach to an already-deployed ContentVerifier contract."""
@@ -136,7 +136,7 @@ class BlockchainClient:
         if not addr:
             raise BlockchainError(
                 "No CONTRACT_ADDRESS provided.\n"
-                "  Deploy first (py person2/deploy.py) then set CONTRACT_ADDRESS in .env."
+                "  Deploy first (py blockchain/deploy.py) then set CONTRACT_ADDRESS in .env."
             )
         self._attach(addr)
 
@@ -147,7 +147,7 @@ class BlockchainClient:
             abi=abi,
         )
 
-    # ── Store ───────────────────────────────────────────
+    # -- Store --
 
     def store_fingerprint(self, sha256_hex: str) -> dict:
         """
@@ -199,7 +199,7 @@ class BlockchainClient:
             "contract_address": self.contract.address,
         }
 
-    # ── Query ───────────────────────────────────────────
+    # -- Query --
 
     def fingerprint_exists(self, sha256_hex: str) -> bool:
         """Check whether a fingerprint has been stored."""

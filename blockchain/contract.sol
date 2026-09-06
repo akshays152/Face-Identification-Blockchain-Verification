@@ -7,14 +7,14 @@ pragma solidity ^0.8.20;
  *         and provides tamper-evident verification.
  *
  * Design goals
- * ────────────
- *  • Minimal — only store, check, and retrieve.
- *  • Auditable — every function is commented.
- *  • No admin roles — anyone can store; anyone can verify.
+ * ------------
+ *  - Minimal — only store, check, and retrieve.
+ *  - Auditable — every function is commented.
+ *  - No admin roles — anyone can store; anyone can verify.
  */
 contract ContentVerifier {
 
-    // ── Data ───────────────────────────────────────────────
+    // -- Data --
 
     /// @notice On-chain record for a single fingerprint.
     struct Record {
@@ -26,7 +26,7 @@ contract ContentVerifier {
     /// @notice Maps a SHA-256 fingerprint (as bytes32) to its record.
     mapping(bytes32 => Record) private records;
 
-    // ── Events ─────────────────────────────────────────────
+    // -- Events --
 
     /// @notice Emitted when a new fingerprint is stored.
     event HashStored(
@@ -35,7 +35,7 @@ contract ContentVerifier {
         uint256 timestamp
     );
 
-    // ── Write ──────────────────────────────────────────────
+    // -- Write --
 
     /**
      * @notice Store a SHA-256 fingerprint on-chain.
@@ -55,7 +55,7 @@ contract ContentVerifier {
         emit HashStored(_hash, msg.sender, block.timestamp);
     }
 
-    // ── Read ───────────────────────────────────────────────
+    // -- Read --
 
     /**
      * @notice Check whether a fingerprint exists on-chain.

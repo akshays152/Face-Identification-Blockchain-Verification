@@ -1,12 +1,12 @@
 """
-Tests for person2.hash_generator
-─────────────────────────────────
+Tests for blockchain.hash_generator
+-----------------------------------
 Verifies deterministic SHA-256 fingerprinting:
- • identical data  → identical hash
- • changed text    → different hash
- • changed URL     → different hash
- • missing fields  → handled gracefully
- • local file hash → correct
+ • identical data  -> identical hash
+ • changed text    -> different hash
+ • changed URL     -> different hash
+ • missing fields  -> handled gracefully
+ • local file hash -> correct
 """
 
 import hashlib
@@ -17,17 +17,14 @@ from pathlib import Path
 
 import pytest
 
-# Ensure imports work regardless of working directory
 import sys
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from person2.hash_generator import (
+from blockchain.hash_generator import (
     canonicalize,
     generate_fingerprint,
     hash_image,
 )
-
-# ── Sample data ──────────────────────────────────────────────
 
 SAMPLE_POST = {
     "post_url": "https://example.com/sample-post-12345",
@@ -37,20 +34,13 @@ SAMPLE_POST = {
     "similarity": 0.91,
 }
 
-
-# ── Determinism ──────────────────────────────────────────────
-
 class TestDeterminism:
-    """The same logical data must always produce the same fingerprint."""
-
     def test_identical_data_identical_hash(self):
         fp1 = generate_fingerprint(SAMPLE_POST)
         fp2 = generate_fingerprint(SAMPLE_POST)
         assert fp1["sha256"] == fp2["sha256"]
 
     def test_dict_key_order_irrelevant(self):
-        """Python dicts are insertion-ordered, but our canonical form
-        must be independent of that."""
         reversed_post = dict(reversed(list(SAMPLE_POST.items())))
         fp1 = generate_fingerprint(SAMPLE_POST)
         fp2 = generate_fingerprint(reversed_post)
@@ -66,12 +56,7 @@ class TestDeterminism:
         post_b = {**SAMPLE_POST, "post_text": "hello world"}
         assert generate_fingerprint(post_a)["sha256"] == generate_fingerprint(post_b)["sha256"]
 
-
-# ── Sensitivity ──────────────────────────────────────────────
-
 class TestSensitivity:
-    """Changing any meaningful field must change the hash."""
-
     def test_changed_text(self):
         modified = {**SAMPLE_POST, "post_text": "Completely different text"}
         assert generate_fingerprint(SAMPLE_POST)["sha256"] != generate_fingerprint(modified)["sha256"]
@@ -88,15 +73,10 @@ class TestSensitivity:
         modified = {**SAMPLE_POST, "post_image": "other_image.jpg"}
         assert generate_fingerprint(SAMPLE_POST)["sha256"] != generate_fingerprint(modified)["sha256"]
 
-
-# ── Missing / edge-case fields ───────────────────────────────
-
 class TestEdgeCases:
-    """Gracefully handle absent or empty fields."""
-
     def test_empty_post(self):
         fp = generate_fingerprint({})
-        assert fp["sha256"]  # still produces a hash
+        assert fp["sha256"]
         assert isinstance(fp["canonical_data"], str)
 
     def test_missing_text(self):
@@ -119,14 +99,8 @@ class TestEdgeCases:
         fp = generate_fingerprint(post)
         assert fp["sha256"]
 
-
-# ── Image hashing ────────────────────────────────────────────
-
 class TestImageHashing:
-    """hash_image must correctly handle files, missing files, and URLs."""
-
     def test_local_file(self):
-        """Hash a real temp file and verify the digest."""
         content = b"test image content for hashing"
         expected = hashlib.sha256(content).hexdigest()
         with tempfile.NamedTemporaryFile(delete=False, suffix=".jpg") as f:
@@ -153,13 +127,9 @@ class TestImageHashing:
         assert result["status"] == "unavailable"
 
     def test_image_info_in_fingerprint(self):
-        """generate_fingerprint must expose image availability."""
         fp = generate_fingerprint(SAMPLE_POST)
         assert "image_info" in fp
         assert fp["image_info"]["status"] in ("ok", "unavailable")
-
-
-# ── Canonical string format ──────────────────────────────────
 
 class TestCanonical:
     def test_pipe_delimited(self):

@@ -1,11 +1,11 @@
 """
-person2/deploy.py
------------------
+blockchain/deploy.py
+--------------------
 Compile and deploy the ContentVerifier smart contract.
 
 Usage
 -----
-    py person2/deploy.py
+    py blockchain/deploy.py
 
 Requires a running blockchain node (local Anvil/Hardhat or Sepolia)
 and a .env file with RPC_URL and PRIVATE_KEY.
@@ -23,7 +23,7 @@ sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="repla
 # Ensure project root is importable
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from person2.blockchain import BlockchainClient, BlockchainError
+from blockchain.blockchain import BlockchainClient, BlockchainError
 
 
 def main() -> None:

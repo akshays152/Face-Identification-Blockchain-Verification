@@ -1,6 +1,6 @@
 """
-person2/verifier.py
-───────────────────
+blockchain/verifier.py
+----------------------
 End-to-end verification of post data against the blockchain record.
 
 Pipeline
@@ -16,8 +16,8 @@ Pipeline
 
 from __future__ import annotations
 
-from person2.hash_generator import generate_fingerprint
-from person2.blockchain import BlockchainClient, BlockchainError
+from blockchain.hash_generator import generate_fingerprint
+from blockchain.blockchain import BlockchainClient, BlockchainError
 
 
 def verify_post(post_data: dict, client: BlockchainClient) -> dict:
@@ -27,24 +27,24 @@ def verify_post(post_data: dict, client: BlockchainClient) -> dict:
     Parameters
     ----------
     post_data : dict
-        The post data to verify (same schema as Person 1's output).
+        The post data to verify.
     client : BlockchainClient
         An already-connected and attached BlockchainClient.
 
     Returns
     -------
     dict with keys:
-        verified       – bool
-        current_hash   – str  (SHA-256 recomputed now)
-        blockchain_hash– str  (SHA-256 retrieved from chain, or "")
-        transaction_hash – str (if available)
-        message        – str  (human-readable explanation)
+        verified       - bool
+        current_hash   - str  (SHA-256 recomputed now)
+        blockchain_hash- str  (SHA-256 retrieved from chain, or "")
+        transaction_hash - str (if available)
+        message        - str  (human-readable explanation)
     """
-    # Step 1 — Generate the fingerprint from the supplied data
+    # Step 1 - Generate the fingerprint from the supplied data
     fp = generate_fingerprint(post_data)
     current_hash = fp["sha256"]
 
-    # Step 2 — Check if this fingerprint exists on-chain
+    # Step 2 - Check if this fingerprint exists on-chain
     try:
         exists = client.fingerprint_exists(current_hash)
     except BlockchainError as e:
@@ -65,7 +65,7 @@ def verify_post(post_data: dict, client: BlockchainClient) -> dict:
             "message": "No matching fingerprint found on the blockchain.",
         }
 
-    # Step 3 — Retrieve the on-chain record
+    # Step 3 - Retrieve the on-chain record
     try:
         record = client.get_record(current_hash)
     except BlockchainError as e:
@@ -77,14 +77,8 @@ def verify_post(post_data: dict, client: BlockchainClient) -> dict:
             "message": f"Could not retrieve blockchain record: {e}",
         }
 
-    # Step 4 — Explicit comparison
-    # The on-chain record exists for exactly this hash, so the
-    # blockchain_hash IS current_hash (that's how the mapping works).
-    # The tamper-evident property is: if the data were modified, a
-    # different current_hash would be generated, and it would NOT
-    # match any on-chain record.  So "exists == True" for the
-    # current hash IS the verification.
-    blockchain_hash = current_hash  # The chain confirmed this hash exists
+    # Step 4 - Explicit comparison
+    blockchain_hash = current_hash
 
     if current_hash == blockchain_hash and record["exists"]:
         return {
@@ -94,10 +88,9 @@ def verify_post(post_data: dict, client: BlockchainClient) -> dict:
             "transaction_hash": "",  # filled by caller if available
             "submitter": record["submitter"],
             "timestamp": record["timestamp"],
-            "message": "Content matches blockchain record — VERIFIED.",
+            "message": "Content matches blockchain record -- VERIFIED.",
         }
 
-    # Defensive: should not reach here, but handle it.
     return {
         "verified": False,
         "current_hash": current_hash,
@@ -115,16 +108,10 @@ def verify_post_with_original(
     """
     Verify that *current_data* matches the fingerprint that was stored
     for *original_data*.
-
-    This is the tamper-test scenario:
-      1. Fingerprint the original → look it up on-chain (should exist).
-      2. Fingerprint the current  → compare with the original.
-      3. If hashes differ → NOT VERIFIED (tampered).
     """
     original_fp = generate_fingerprint(original_data)["sha256"]
     current_fp = generate_fingerprint(current_data)["sha256"]
 
-    # Check that the original was stored
     try:
         exists = client.fingerprint_exists(original_fp)
     except BlockchainError as e:
@@ -143,7 +130,6 @@ def verify_post_with_original(
             "message": "Original fingerprint not found on the blockchain.",
         }
 
-    # Explicit comparison
     if current_fp == original_fp:
         record = client.get_record(original_fp)
         return {
@@ -152,12 +138,12 @@ def verify_post_with_original(
             "blockchain_hash": original_fp,
             "submitter": record["submitter"],
             "timestamp": record["timestamp"],
-            "message": "Content matches blockchain record — VERIFIED.",
+            "message": "Content matches blockchain record -- VERIFIED.",
         }
     else:
         return {
             "verified": False,
             "current_hash": current_fp,
             "blockchain_hash": original_fp,
-            "message": "Content does NOT match blockchain record — TAMPERED.",
+            "message": "Content does NOT match blockchain record -- TAMPERED.",
         }

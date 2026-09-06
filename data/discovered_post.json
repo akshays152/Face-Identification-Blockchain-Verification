@@ -1,0 +1,12 @@
+{
+    "_comment": "Placeholder — discovery results will be written here.",
+    "post_url": "https://instagram.com/p/PlaceholderID123",
+    "post_image": "C:/path/to/downloaded/target_image.jpg",
+    "post_text": "This is a placeholder for the actual caption or text content of the matched post.",
+    "metadata": {
+        "source": "instagram",
+        "username": "target_user_123",
+        "date_posted": "2026-09-01T14:30:00Z"
+    },
+    "similarity_score": 0.942
+}
