@@ -1,0 +1,10 @@
+{
+    "_comment": "Placeholder — Person 1 will overwrite this with real discovery results.",
+    "post_url": "https://example.com/placeholder",
+    "post_image": "",
+    "post_text": "Placeholder post for integration testing",
+    "metadata": {
+        "source": "placeholder"
+    },
+    "similarity": 0.0
+}
