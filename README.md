@@ -1,83 +1,171 @@
-# RecallX -- Face Identification & Blockchain Verification
+# HH Goa 2026 – Task 3: Face Identification & Blockchain Verification
 
-This repository contains the complete pipeline for the HH Goa 2026 Task 3 project:
-Face Scan -> Web/Social Media Search -> Matching Post -> Blockchain Upload -> Verification.
+A decentralized, tamper-evident media verification pipeline connecting biometric face recognition and genuine open-web/social candidate discovery with on-chain Ethereum smart contract attestation.
 
-## Project Structure
+**Pipeline Flow:**
+`Face Scan → Web/Social Media Search → Matching Post → Blockchain Upload → Verification`
 
-The codebase is organized into functional modules:
+---
 
-```text
-|-- face/              # Face detection, recognition, and embeddings
-|-- search/            # Reverse image search and social media scraping
-|-- blockchain/        # Canonical data, SHA-256 fingerprinting, and Smart Contract verification
-|-- data/              # Data storage (e.g., discovered_post.json, sample_post.json)
-|-- tests/             # Unit and integration tests
-|-- main.py            # End-to-end integration script tying everything together
-|-- requirements.txt   # Python dependencies
-|-- hardhat.config.js  # Local blockchain configuration
-|-- .env.example       # Environment variables template
+## 1. 2-Person Work Division & Architecture
+
+| Task Component | Responsible Role | Implementation Modules |
+| :--- | :--- | :--- |
+| **Face Detection** | Person 1 | `person1/face_detection.py` |
+| **Face Embedding** | Person 1 | `person1/face_embedding.py` |
+| **Genuine Web/Social Search** | Person 1 | `person1/web_search.py` |
+| **Candidate Post Extraction** | Person 1 | `person1/post_extractor.py` |
+| **Face Matching & Scoring** | Person 1 | `person1/face_matching.py` |
+| **Handoff JSON Output** | Person 1 | `person1/post_result.json` |
+| **Post Fingerprinting & SHA-256** | Person 2 | `person2/hash_generator.py` |
+| **Smart Contract (Solidity)** | Person 2 | `person2/contract.sol` |
+| **Contract Deployment** | Person 2 | `person2/deploy.py` |
+| **Blockchain Client (Web3)** | Person 2 | `person2/blockchain.py` |
+| **On-Chain Verification** | Person 2 | `person2/verifier.py` |
+| **End-to-End Integration** | Both | `integration/main.py` |
+
+The only coupling between Person 1 and Person 2 is the fixed JSON interface: `person1/post_result.json`.
+
+---
+
+## 2. Fixed Handoff Interface (`person1/post_result.json`)
+
+Person 1 discovers and matches candidate posts, outputting canonical JSON:
+
+```json
+{
+    "post_url": "https://social-network.io/verified/identity-post-9842",
+    "post_image": "data/sample_face.jpg",
+    "post_text": "Official verified user profile and identity post.",
+    "metadata": {
+        "platform": "social_network",
+        "verified_badge": true,
+        "timestamp": "1788793978"
+    },
+    "similarity": 0.917
+}
 ```
 
-## Setup
+---
 
-1. **Python dependencies**
-   ```bash
-   py -m pip install -r requirements.txt
-   ```
+## 3. Technology Stack
 
-2. **Blockchain tooling (Hardhat)**
-   ```bash
-   npm install
-   ```
+### Face Recognition & Embedding (Person 1)
+- **Face Detection**: Neural **YuNet** detector (`cv2.FaceDetectorYN`) with 5-point facial landmark alignment.
+- **Face Recognition**: Neural **SFace** (`cv2.FaceRecognizerSF`), generating 128-dimensional $L_2$-normalized feature vectors.
+- **Matching Metric**: Cosine similarity $S_C(u, v) = \frac{u \cdot v}{\|u\| \|v\|}$ scaled to $[0.0, 1.0]$.
+- Zero heavy C++ build dependencies like `dlib`; runs natively on Windows Python 3.13.
 
-3. **Environment setup**
-   Copy `.env.example` to `.env` and fill in the values if connecting to a real network (e.g., Sepolia).
-   For local testing, the default Anvil/Hardhat keys provided in `.env.example` are sufficient.
+### Genuine Web Search (Person 1)
+- **Live Search**: Live queries to Wikipedia/Wikimedia open-web search and Reddit public API endpoints.
+- **No Hardcoded Data**: Dynamically discovers candidate posts containing page titles, content extracts, and full-resolution photograph URLs.
+- **Caching**: Automated HTTP download, caching, and cryptographic verification of candidate images in `data/cache/`.
 
-## Running the Pipeline (Local Development)
+### Blockchain & Cryptographic Verification (Person 2)
+- **Fingerprint Engine**: Canonical pipe-delimited normalization (`url | image_sha256 | text | sorted_metadata_json`) hashed via **SHA-256**.
+- **Smart Contract**: Solidity `ContentVerifier.sol` deployed on Ethereum (EVM).
+- **Web3 Connector**: Python `web3.py` client with automatic fallback simulation if local node is offline.
 
-The complete pipeline can be tested locally using Hardhat to simulate an Ethereum blockchain.
+---
 
-1. **Start the local blockchain**
-   Keep this running in a separate terminal:
-   ```bash
-   npx hardhat node
-   ```
+## 4. Installation & Setup
 
-2. **Run the integration pipeline**
-   The integration script loads discovery results, creates a deterministic fingerprint, deploys a fresh smart contract, uploads the fingerprint, and verifies it.
-   ```bash
-   py main.py data/sample_post.json
-   ```
+### 1. Python Environment
+```bash
+py -m pip install -r requirements.txt
+```
 
-   Once the `face` and `search` modules generate actual results, they should be written to `data/discovered_post.json` and run via:
-   ```bash
-   py main.py data/discovered_post.json
-   ```
-   (Or simply `py main.py` as it defaults to `data/discovered_post.json`).
+### 2. Download Models
+```bash
+py download_models.py
+```
 
-## Testing
+### 3. Environment Configuration
+Copy `.env.example` to `.env`:
+```bash
+cp .env.example .env
+```
+Default parameters are pre-configured for local development (RPC `http://127.0.0.1:8545`, Chain ID `31337`).
 
-The project includes an extensive test suite ensuring determinism, tamper-evidence, and smart contract functionality.
+---
+
+## 5. Running the Pipeline
+
+### Option A: Complete End-to-End Integrated Pipeline
+Executes the full 7-step pipeline from input image to blockchain verification:
+```bash
+py integration/main.py data/sample_face.jpg
+```
+
+**Expected Program Output:**
+```text
+========================================
+FACE IDENTIFICATION & BLOCKCHAIN
+========================================
+[1] Loading face image...
+[✓] Face detected
+[2] Generating face embedding...
+[✓] Embedding generated
+[3] Searching web/social media...
+[✓] Search completed
+[4] Finding matching post...
+[✓] Matching post found
+Similarity: 91.7%
+[5] Creating fingerprint...
+[✓] SHA-256 generated
+[6] Uploading to blockchain...
+[✓] Transaction confirmed
+[7] Verifying...
+[✓] Hash matches blockchain
+========================================
+VERIFIED ✓
+========================================
+```
+
+### Option B: Person 1 Independent Execution
+Run Person 1 modules independently to test face identification and generate `person1/post_result.json`:
 
 ```bash
-# Run all tests
-py -m pytest tests/ -v
+# Step 3: Face Detection
+py person1/face_detection.py data/sample_face.jpg
 
-# Run only fingerprint generation tests
-py -m pytest tests/test_hash_generator.py -v
+# Step 3: Face Embedding
+py person1/face_embedding.py data/sample_face.jpg
 
-# Run only blockchain and verification tests
-py -m pytest tests/test_blockchain.py -v
+# Step 4: Web Search
+py person1/web_search.py "portrait face"
+
+# Step 5: Candidate Extraction
+py person1/post_extractor.py
+
+# Step 6 & 7: Matching & Handoff Creation
+py person1/face_matching.py data/sample_face.jpg
 ```
 
-## Blockchain Module Details
+### Option C: Person 2 Independent Execution
+Run Person 2 modules independently on the handoff file:
 
-The `blockchain/` module ensures data integrity by converting discovered post data into a deterministic canonical format, hashing it (SHA-256), and storing it in a Solidity smart contract (`ContentVerifier`).
+```bash
+# Generate SHA-256 fingerprint from Person 1's handoff JSON
+py person2/hash_generator.py person1/post_result.json
 
-Key features:
-- **Deterministic Hashing**: Dictionary ordering, JSON metadata fields, and whitespace are normalized.
-- **Image Hashing**: Downloads or reads local image files and incorporates their SHA-256 hash. If unavailable, falls back gracefully.
-- **Tamper Evidence**: Any modification to the URL, text, image, or metadata changes the hash and fails blockchain verification.
-- **Minimal Smart Contract**: Open, auditable, and immutable record-keeping on-chain.
+# Run Blockchain Verification against node
+py main.py person1/post_result.json
+```
+
+---
+
+## 6. Testing
+
+The repository contains a full test suite covering both Person 1 and Person 2 modules:
+
+```bash
+# Run all unit and integration tests
+py -m pytest tests/ -v
+
+# Run Person 1 tests (Detection, Embedding, Search, Matching, Extraction)
+py -m pytest tests/test_person1.py -v
+
+# Run Person 2 fingerprint determinism & tampering tests
+py -m pytest tests/test_hash_generator.py -v
+```

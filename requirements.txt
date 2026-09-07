@@ -1,0 +1,15 @@
+# Core Vision and Face Processing
+numpy>=1.24.0
+pillow>=10.0.0
+opencv-python>=4.8.0
+
+# Network, Scraping, and Search
+requests>=2.28.0
+
+# Blockchain and Cryptography
+web3>=6.0.0
+py-solc-x>=2.0.0
+python-dotenv>=1.0.0
+
+# Testing
+pytest>=7.0.0
