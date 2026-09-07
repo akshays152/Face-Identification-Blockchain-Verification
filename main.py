@@ -1,5 +1,5 @@
 """
-RecallX -- Main Pipeline
+Face Identification & Blockchain Verification -- Main Pipeline
 ------------------------
 This script ties the search/face output to the blockchain verification module.
 
@@ -72,7 +72,7 @@ def main():
 
     print()
     print(_hr())
-    print("  RECALLX -- BLOCKCHAIN VERIFICATION MODULE")
+    print("  FACE VERIFICATION -- BLOCKCHAIN VERIFICATION MODULE")
     print(_hr())
     print()
 

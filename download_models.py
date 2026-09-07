@@ -2,13 +2,13 @@ import urllib.request
 from pathlib import Path
 import requests
 
-models_dir = Path("person1/models")
+models_dir = Path("part1/models")
 models_dir.mkdir(parents=True, exist_ok=True)
 
 yunet_url = "https://github.com/opencv/opencv_zoo/raw/main/models/face_detection_yunet/face_detection_yunet_2023mar.onnx"
 sface_url = "https://github.com/opencv/opencv_zoo/raw/main/models/face_recognition_sface/face_recognition_sface_2021dec.onnx"
 
-headers = {"User-Agent": "Mozilla/5.0 RecallX-Verifier/1.0"}
+headers = {"User-Agent": "Mozilla/5.0 FaceVerification/1.0"}
 
 print("Checking/downloading YuNet...")
 yunet_path = models_dir / "face_detection_yunet.onnx"

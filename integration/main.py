@@ -4,8 +4,8 @@ integration/main.py
 End-to-End Pipeline Integration:
 Face Identification & Blockchain Verification
 
-Connects Person 1 (Face Scan -> Face Detection -> Embedding -> Web Search -> Matching Post)
-with Person 2 (Fingerprint -> SHA-256 -> Blockchain Upload -> Verification).
+Connects Part 1 (Face Scan -> Face Detection -> Embedding -> Web Search -> Matching Post)
+with Part 2 (Fingerprint -> SHA-256 -> Blockchain Upload -> Verification).
 
 Section 6 Expected Output:
 ========================================
@@ -57,17 +57,17 @@ try:
 except Exception:
     pass
 
-# Import Person 1 modules
-from person1.face_detection import FaceDetector
-from person1.face_embedding import FaceEmbedder
-from person1.web_search import search_web_and_social
-from person1.post_extractor import extract_candidate_posts
-from person1.face_matching import FaceMatcher
+# Import Part 1 modules
+from part1.face_detection import FaceDetector
+from part1.face_embedding import FaceEmbedder
+from part1.web_search import search_web_and_social
+from part1.post_extractor import extract_candidate_posts
+from part1.face_matching import FaceMatcher
 
-# Import Person 2 modules
-from person2.hash_generator import generate_fingerprint
-from person2.blockchain import BlockchainClient, BlockchainError
-from person2.verifier import verify_post
+# Import Part 2 modules
+from part2.hash_generator import generate_fingerprint
+from part2.blockchain import BlockchainClient, BlockchainError
+from part2.verifier import verify_post
 
 
 class SimulatedBlockchainClient:
@@ -116,7 +116,7 @@ class SimulatedBlockchainClient:
 def run_pipeline(
     input_face_path: Optional[Path | str] = None,
     search_query: str = "portrait face",
-    handoff_output: Path = _ROOT / "person1" / "post_result.json",
+    handoff_output: Path = _ROOT / "part1" / "post_result.json",
 ) -> bool:
     """
     Executes the complete 7-stage Face Identification & Blockchain Verification pipeline.
@@ -161,18 +161,6 @@ def run_pipeline(
     print("[3] Searching web/social media...")
     try:
         raw_candidates = search_web_and_social(query=search_query)
-        # Also include the input profile post to ensure a ground-truth match candidate
-        verified_post_seed = {
-            "post_url": "https://social-network.io/verified/identity-post-9842",
-            "post_image": str(face_path.resolve()),
-            "post_text": "Official verified user profile and identity post.",
-            "metadata": {
-                "platform": "social_network",
-                "verified_badge": True,
-                "timestamp": str(int(time.time())),
-            },
-        }
-        raw_candidates.insert(0, verified_post_seed)
         candidates = extract_candidate_posts(raw_candidates)
         print("[✓] Search completed")
     except Exception as exc:
@@ -196,7 +184,7 @@ def run_pipeline(
     print("[✓] Matching post found")
     print(f"Similarity: {sim_percent:.1f}%")
 
-    # Generate handoff JSON: person1/post_result.json
+    # Generate handoff JSON: part1/post_result.json
     handoff_data = matcher.create_handoff_file(
         best_post,
         similarity=saved_sim,
