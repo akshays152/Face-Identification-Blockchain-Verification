@@ -7,7 +7,7 @@ A decentralized, tamper-evident media verification pipeline connecting biometric
 
 ---
 
-## 1. 2-Person Work Division & Architecture
+## 1. Architecture
 
 | Task Component | Responsible Role | Implementation Modules |
 | :--- | :--- | :--- |
